@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/tobolist/static/css/main.f855e6bc.css",
+    "main.js": "/tobolist/static/js/main.3634ec73.js",
+    "index.html": "/tobolist/index.html",
+    "main.f855e6bc.css.map": "/tobolist/static/css/main.f855e6bc.css.map",
+    "main.3634ec73.js.map": "/tobolist/static/js/main.3634ec73.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f855e6bc.css",
+    "static/js/main.3634ec73.js"
+  ]
+}
