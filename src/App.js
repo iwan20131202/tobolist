@@ -1,86 +1,95 @@
-import "./App.css";
-
-import { Component } from "react";
-import data from "./data/todo-data.json";
-import ToDoList from "./components/TodoList.js";
-import ToDoEditor from "./components/TodoEditor.js";
-import Info from "./components/TodoInfo.js";
-import Filter from "./components/FilterTodo.js";
-
-import { MdAddTask } from "react-icons/md";
-
-import { Container, Title } from "./App.styled.js";
+import React, { Component } from "react";
+import { nanoid } from "nanoid";
+import ContactForm from "./ContactForm";
+import ContactList from "./ContactList";
+import Filter from "./Filter";
 
 class App extends Component {
   state = {
-    todos: data,
+    contacts: [],
     filter: "",
   };
 
-  addTodo = (text) => {
-    const trimmedText = text.trim();
+  componentDidMount() {
+    const savedContacts = localStorage.getItem("contacts");
+    const parsedContacts = JSON.parse(savedContacts);
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts });
+    }
+  }
 
-    if (!trimmedText) return;
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      localStorage.setItem("contacts", JSON.stringify(this.state.contacts));
+    }
+  }
 
-    const todo = {
-      id: Date.now().toString(),
-      text: trimmedText,
-      completed: false,
+  addContact = (name, number) => {
+    const isDuplicate = this.state.contacts.find(
+      (contact) => contact.name.toLowerCase() === name.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      alert(`${name} is already in contacts`);
+      return;
+    }
+
+    const newContact = {
+      id: nanoid(),
+      name,
+      number,
     };
 
-    this.setState((prevTodos) => ({
-      todos: [todo, ...prevTodos.todos],
+    this.setState((prevState) => ({
+      contacts: [newContact, ...prevState.contacts],
     }));
   };
 
-  deleteTodo = (id) => {
-    this.setState((prevTodos) => ({
-      todos: prevTodos.todos.filter((item) => item.id !== id),
-    }));
-  };
-
-  toggleCompleted = (id) => {
-    this.setState((prevTodos) => ({
-      todos: prevTodos.todos.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item,
+  deleteContact = (contactId) => {
+    this.setState((prevState) => ({
+      contacts: prevState.contacts.filter(
+        (contact) => contact.id !== contactId,
       ),
     }));
-
-    // alert("Стан змінено!");
   };
 
-  getFilteredTodos = () => {
-    const { todos, filter } = this.state;
+  changeFilter = (e) => {
+    this.setState({ filter: e.currentTarget.value });
+  };
 
-    return todos.filter((todo) =>
-      todo.text.toLowerCase().includes(filter.toLowerCase()),
+  getVisibleContacts = () => {
+    const { contacts, filter } = this.state;
+    const normalizedFilter = filter.toLowerCase();
+    return contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(normalizedFilter),
     );
   };
 
-  changeFilter = (event) => {
-    this.setState({ filter: event.target.value });
-  };
-
   render() {
-    const { todos, filter } = this.state;
-    const completedCount = todos.filter((item) => item.completed).length;
+    const { filter } = this.state;
+    const visibleContacts = this.getVisibleContacts();
 
     return (
-      <Container>
-        <Title>
-          ToDo List
-          <MdAddTask />
-        </Title>
+      <div
+        style={{
+          maxWidth: "400px",
+          margin: "20px auto",
+          padding: "20px",
+          border: "1px solid #ccc",
+          borderRadius: "8px",
+          fontFamily: "Arial",
+        }}
+      >
+        <h1>PhoneStation</h1>
+        <ContactForm onSubmit={this.addContact} />
 
-        <Info total={todos.length} completed={completedCount} />
-        <ToDoEditor onAdd={this.addTodo} />
+        <h2>Contacts</h2>
         <Filter value={filter} onChange={this.changeFilter} />
-        <ToDoList
-          todos={this.getFilteredTodos()}
-          onDelete={this.deleteTodo}
-          onToggle={this.toggleCompleted}
+        <ContactList
+          contacts={visibleContacts}
+          onDeleteContact={this.deleteContact}
         />
-      </Container>
+      </div>
     );
   }
 }
